@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الأخبار</title>
+    <link rel="stylesheet" href="dark-cv.css">
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1>لوحة إدارة الأخبار</h1>
+            <a href="dark-cv.html" class="back-btn">
+                <i class="fas fa-home"></i>
+                <span>الرئيسية</span>
+            </a>
+        </header>
+
+        <div class="admin-content">
+            <section class="add-news">
+                <h2>إضافة خبر جديد</h2>
+                <form id="newsForm" class="news-form">
+                    <div class="form-group">
+                        <label for="newsTitle">عنوان الخبر</label>
+                        <input type="text" id="newsTitle" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newsContent">محتوى الخبر</label>
+                        <textarea id="newsContent" rows="6" required></textarea>
+                    </div>
+
+                    <!-- إضافة حقل الرابط -->
+                    <div class="form-group">
+                        <label for="newsLink">رابط إضافي</label>
+                        <input type="url" id="newsLink" placeholder="https://">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newsCategory">تصنيف الخبر</label>
+                        <select id="newsCategory" required>
+                            <option value="general">عام</option>
+                            <option value="tech">تقنية</option>
+                            <option value="events">فعاليات</option>
+                            <option value="updates">تحديثات</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newsImage">صورة الخبر</label>
+                        <input type="file" id="newsImage" accept="image/*">
+                        <div class="image-preview"></div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-plus"></i>
+                            نشر الخبر
+                        </button>
+                        <button type="reset" class="btn-secondary">
+                            <i class="fas fa-redo"></i>
+                            إعادة تعيين
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="news-list">
+                <h2>الأخبار المنشورة</h2>
+                <div class="news-filters">
+                    <button class="filter-btn active" data-filter="all">الكل</button>
+                    <button class="filter-btn" data-filter="general">عام</button>
+                    <button class="filter-btn" data-filter="tech">تقنية</button>
+                    <button class="filter-btn" data-filter="events">فعاليات</button>
+                    <button class="filter-btn" data-filter="updates">تحديثات</button>
+                </div>
+                <div class="news-grid">
+                    <!-- News items will be dynamically added here -->
+                </div>
+            </section>
+        </div>
+    </div>
+    <script src="admin.js"></script>
+</body>
+</html>
