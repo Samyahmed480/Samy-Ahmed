@@ -224,8 +224,9 @@ h1 {
 
 .contact-actions {
     display: flex;
-    gap: 10px;
-    justify-content: center;
+    flex-direction: column;
+    gap: 10px; /* مسافة بين الأزرار */
+    align-items: stretch; /* لجعل الأزرار بنفس العرض */
 }
 
 .contact-btn {
@@ -271,7 +272,7 @@ h1 {
 
 .icon:nth-child(even) {
     animation-name: floatReverse;
-    animation-duration: 20s;
+    animation-duration: 1s;
 }
 
 @keyframes float {
