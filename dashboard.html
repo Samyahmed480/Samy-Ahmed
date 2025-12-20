@@ -259,6 +259,10 @@
                         <input type="file" id="projFileInput" accept="image/*">
                         <button onclick="uploadProjectImage()" style="width: auto; padding: 5px 10px;">رفع وإضافة</button>
                     </div>
+                    <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                        <input type="text" id="projImgUrlInput" placeholder="أو ضع رابط الصورة هنا">
+                        <button onclick="addProjectImageFromUrl()" style="width: auto; padding: 5px 10px;">إضافة رابط</button>
+                    </div>
                     <div id="currentProjectImagesList" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>
                 </div>
 
@@ -502,11 +506,22 @@
             }
         };
 
+        window.addProjectImageFromUrl = () => {
+            const urlInput = document.getElementById('projImgUrlInput');
+            const url = urlInput.value;
+            if (url) {
+                tempProjectImages.push(url);
+                renderTempImages();
+                urlInput.value = '';
+                showStatus('تمت إضافة رابط الصورة');
+            }
+        };
+
         function renderTempImages() {
             const container = document.getElementById('currentProjectImagesList');
             container.innerHTML = tempProjectImages.map((url, index) => `
                 <div style="position: relative;">
-                    <img src="${url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                    <a href="${url}" target="_blank"><img src="${url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"></a>
                     <span onclick="removeTempImage(${index})" style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 15px; height: 15px; text-align: center; line-height: 15px; font-size: 10px; cursor: pointer;">x</span>
                 </div>
             `).join('');
@@ -648,7 +663,7 @@
                     projectsList.innerHTML += `
                         <div class="item" draggable="true" data-key="${key}">
                             <div style="display:flex; align-items:center; gap:10px;">
-                                <img src="${proj.image}" style="width:40px; height:40px; border-radius:4px; object-fit:cover;">
+                                <a href="${proj.image}" target="_blank"><img src="${proj.image}" style="width:40px; height:40px; border-radius:4px; object-fit:cover;"></a>
                                 <div>
                                     <div style="font-weight:bold;">${proj.title}</div>
                                     <div style="font-size:0.8em; color:#aaa;">${proj.category}</div>
