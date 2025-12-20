@@ -1,0 +1,726 @@
+<!-- dashboard.html -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - سامي أحمد</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #050505;
+            color: #fff;
+            font-family: 'Cairo', sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(0, 255, 136, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+        }
+        h2 {
+            color: #00ff88;
+            margin-top: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ccc;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #00ff88;
+        }
+        button {
+            background: linear-gradient(45deg, #00ff88, #00a1ff);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .btn-danger {
+            background: #ff4444;
+            color: white;
+            margin-right: 10px;
+        }
+        .item-list {
+            margin-top: 15px;
+            display: grid;
+            gap: 10px;
+        }
+        .item {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: grab;
+        }
+        .item.dragging {
+            opacity: 0.5;
+            background: #00ff88;
+            color: #000;
+        }
+        .status {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: none;
+            z-index: 1000;
+        }
+        .success { background: #00ff88; color: #000; }
+        .error { background: #ff4444; color: #fff; }
+        
+        /* Icon Picker */
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+            gap: 8px;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 10px;
+            display: none;
+            border: 1px solid #333;
+        }
+        .icon-option {
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+        }
+        .icon-option:hover, .icon-option.selected {
+            background: #00ff88;
+            color: #000;
+            transform: scale(1.1);
+        }
+        .btn-edit {
+            background: #ffbb00;
+            color: #000;
+            margin-left: 5px;
+        }
+        .btn-cancel {
+            background: #555;
+            color: #fff;
+            margin-right: 5px;
+            display: none;
+        }
+        .preview-icon {
+            font-size: 1.5rem;
+            color: #00ff88;
+            margin-left: 10px;
+            width: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 style="text-align: center; margin-bottom: 40px;">⚙️ لوحة التحكم</h1>
+
+        <!-- قسم الإحصائيات -->
+        <div class="card">
+            <h2><i class="fas fa-chart-bar"></i> الإحصائيات</h2>
+            <div style="text-align: center; padding: 10px;">
+                <div id="visitCount" style="font-size: 3rem; font-weight: bold; color: #00ff88;">0</div>
+                <div style="color: #aaa; margin-top: 5px;">عدد الزيارات الكلي</div>
+            </div>
+        </div>
+
+        <!-- قسم الألوان -->
+        <div class="card">
+            <h2><i class="fas fa-palette"></i> ألوان الموقع</h2>
+            <div class="form-group">
+                <label>اللون الأساسي</label>
+                <input type="color" id="primaryColor" value="#00ff88">
+            </div>
+            <div class="form-group">
+                <label>لون الخلفية</label>
+                <input type="color" id="bgColor" value="#050505">
+            </div>
+            <button onclick="saveTheme()">حفظ الألوان</button>
+        </div>
+
+        <!-- قسم البيانات الشخصية -->
+        <div class="card">
+            <h2><i class="fas fa-user"></i> البيانات الشخصية</h2>
+            <div class="form-group">
+                <label>الاسم</label>
+                <input type="text" id="nameInput" placeholder="الاسم الظاهر">
+            </div>
+            <div class="form-group">
+                <label>رابط الصورة الشخصية</label>
+                <input type="text" id="imgInput" placeholder="URL الصورة">
+                <input type="file" id="imgFileInput" accept="image/*" style="margin-top: 5px;">
+            </div>
+            <button onclick="saveProfile()">حفظ البيانات الشخصية</button>
+        </div>
+
+        <!-- قسم نبذة عني -->
+        <div class="card">
+            <h2><i class="fas fa-info-circle"></i> نبذة عني</h2>
+            <div class="form-group">
+                <textarea id="aboutInput" rows="4" placeholder="اكتب النبذة هنا..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>صورة النبذة</label>
+                <input type="text" id="aboutImgInput" placeholder="URL الصورة">
+                <input type="file" id="aboutFileInput" accept="image/*" style="margin-top: 5px;">
+            </div>
+            <button onclick="saveAbout()">حفظ النبذة</button>
+        </div>
+
+        <!-- قسم روابط التواصل -->
+        <div class="card">
+            <h2><i class="fas fa-share-alt"></i> روابط التواصل</h2>
+            <input type="hidden" id="socialId">
+            <div class="form-group" style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="socialLink" placeholder="الرابط (URL)">
+                <div class="preview-icon"><i id="socialIconPreview" class="fas fa-question"></i></div>
+                <input type="text" id="socialIcon" placeholder="اختر أيقونة" readonly onclick="toggleIconPicker('social')">
+                <button id="btnSaveSocial" onclick="saveSocial()">إضافة</button>
+                <button id="btnCancelSocial" class="btn-cancel" onclick="resetSocialForm()">إلغاء</button>
+            </div>
+            <div id="socialIconPicker" class="icon-grid"></div>
+            <div id="socialsList" class="item-list"></div>
+        </div>
+
+        <!-- قسم المهارات -->
+        <div class="card">
+            <h2><i class="fas fa-code"></i> المهارات</h2>
+            <input type="hidden" id="skillId">
+            <div class="form-group" style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="skillName" placeholder="اسم المهارة (مثلاً HTML)">
+                <div class="preview-icon"><i id="iconPreview" class="fas fa-question"></i></div>
+                <input type="text" id="skillIcon" placeholder="اختر أيقونة" readonly onclick="toggleIconPicker('skill')">
+                <button id="btnSaveSkill" onclick="saveSkill()">إضافة</button>
+                <button id="btnCancelSkill" class="btn-cancel" onclick="resetSkillForm()">إلغاء</button>
+            </div>
+            <div id="iconPicker" class="icon-grid"></div>
+            <div id="skillsList" class="item-list"></div>
+        </div>
+
+        <!-- قسم المشاريع -->
+        <div class="card">
+            <h2><i class="fas fa-project-diagram"></i> المشاريع</h2>
+            <input type="hidden" id="projId">
+            <div class="form-group" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
+                <input type="text" id="projTitle" placeholder="عنوان المشروع" style="margin-bottom: 10px;">
+                <input type="text" id="projCat" placeholder="التصنيف (ويب / موبايل)" style="margin-bottom: 10px;">
+                <input type="text" id="projDesc" placeholder="وصف قصير" style="margin-bottom: 10px;">
+                <input type="text" id="projLink" placeholder="رابط المشروع (URL)" style="margin-bottom: 10px;">
+                
+                <!-- إدارة صور المشروع -->
+                <div style="border: 1px dashed #444; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                    <label>صور المشروع (يمكنك إضافة أكثر من صورة)</label>
+                    <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                        <input type="file" id="projFileInput" accept="image/*">
+                        <button onclick="uploadProjectImage()" style="width: auto; padding: 5px 10px;">رفع وإضافة</button>
+                    </div>
+                    <div id="currentProjectImagesList" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>
+                </div>
+
+                <button id="btnSaveProj" onclick="saveProject()">إضافة مشروع جديد</button>
+                <button id="btnCancelProj" class="btn-cancel" onclick="resetProjForm()">إلغاء</button>
+            </div>
+            <div id="projectsList" class="item-list"></div>
+        </div>
+    </div>
+
+    <div id="statusMsg" class="status success">تم الحفظ بنجاح!</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCLf_0s5igxK11orNYnW_xshMaLGgNP-Hw",
+            authDomain: "s123-f2424.firebaseapp.com",
+            databaseURL: "https://s123-f2424-default-rtdb.firebaseio.com",
+            projectId: "s123-f2424",
+            storageBucket: "s123-f2424.firebasestorage.app",
+            messagingSenderId: "426675263662",
+            appId: "1:426675263662:web:4f1772dbf1b4eeb35cb53f",
+            measurementId: "G-BLJ1V5S36X"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const storage = getStorage(app);
+
+        function showStatus(msg, isError = false) {
+            const el = document.getElementById('statusMsg');
+            el.textContent = msg;
+            el.className = isError ? 'status error' : 'status success';
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
+
+        async function uploadImage(file) {
+            if (!file) return null;
+            try {
+                const storageRef = sRef(storage, 'images/' + Date.now() + '-' + file.name);
+                await uploadBytes(storageRef, file);
+                return await getDownloadURL(storageRef);
+            } catch (error) {
+                console.error("Upload failed:", error);
+                showStatus("فشل رفع الصورة: " + error.message, true);
+                return null;
+            }
+        }
+
+        // --- إدارة الأيقونات ---
+        const commonIcons = [
+            "fab fa-html5", "fab fa-css3-alt", "fab fa-js", "fab fa-react", "fab fa-angular", "fab fa-vuejs",
+            "fab fa-node", "fab fa-python", "fab fa-java", "fab fa-php", "fab fa-git-alt", "fab fa-github",
+            "fab fa-docker", "fab fa-aws", "fab fa-linux", "fab fa-android", "fab fa-apple", "fab fa-windows",
+            "fas fa-code", "fas fa-laptop-code", "fas fa-terminal", "fas fa-database", "fas fa-server",
+            "fas fa-mobile-alt", "fas fa-paint-brush", "fas fa-pen-nib", "fas fa-layer-group", "fas fa-globe",
+            "fas fa-envelope", "fas fa-phone", "fas fa-user", "fas fa-briefcase", "fas fa-camera", "fas fa-video",
+            "fas fa-music", "fas fa-gamepad", "fas fa-robot", "fas fa-brain", "fas fa-cloud", "fas fa-network-wired",
+            "fab fa-facebook", "fab fa-twitter", "fab fa-instagram", "fab fa-linkedin", "fab fa-whatsapp", "fab fa-telegram"
+        ];
+
+        const iconPicker = document.getElementById('iconPicker');
+        const socialIconPicker = document.getElementById('socialIconPicker');
+
+        function createIconOptions(container, inputId, previewId) {
+            commonIcons.forEach(icon => {
+                const div = document.createElement('div');
+                div.className = 'icon-option';
+                div.innerHTML = `<i class="${icon}"></i>`;
+                div.onclick = () => {
+                    document.getElementById(inputId).value = icon;
+                    document.getElementById(previewId).className = icon;
+                    container.style.display = 'none';
+                };
+                container.appendChild(div);
+            });
+        }
+
+        createIconOptions(iconPicker, 'skillIcon', 'iconPreview');
+        createIconOptions(socialIconPicker, 'socialIcon', 'socialIconPreview');
+
+        window.toggleIconPicker = (type) => {
+            if (type === 'skill') {
+                iconPicker.style.display = iconPicker.style.display === 'none' ? 'grid' : 'none';
+            } else {
+                socialIconPicker.style.display = socialIconPicker.style.display === 'none' ? 'grid' : 'none';
+            }
+        };
+
+        // --- دوال الحفظ ---
+        window.saveTheme = () => {
+            set(ref(db, 'theme'), {
+                primary: document.getElementById('primaryColor').value,
+                bg: document.getElementById('bgColor').value
+            })
+            .then(() => showStatus('تم حفظ الألوان'))
+            .catch(e => showStatus('خطأ: ' + e.message, true));
+        };
+
+        window.saveProfile = async () => {
+            try {
+                let imageUrl = document.getElementById('imgInput').value;
+                const fileInput = document.getElementById('imgFileInput');
+                if (fileInput.files.length > 0) {
+                    showStatus('جاري رفع الصورة...');
+                    const url = await uploadImage(fileInput.files[0]);
+                    if(url) imageUrl = url;
+                }
+                await set(ref(db, 'profile'), {
+                    name: document.getElementById('nameInput').value,
+                    image: imageUrl
+                });
+                showStatus('تم حفظ البيانات الشخصية');
+            } catch (e) {
+                showStatus('خطأ: ' + e.message, true);
+            }
+        };
+
+        window.saveAbout = async () => {
+            try {
+                let imageUrl = document.getElementById('aboutImgInput').value;
+                const fileInput = document.getElementById('aboutFileInput');
+                if (fileInput.files.length > 0) {
+                    showStatus('جاري رفع صورة النبذة...');
+                    const url = await uploadImage(fileInput.files[0]);
+                    if(url) imageUrl = url;
+                }
+                await set(ref(db, 'about'), {
+                    text: document.getElementById('aboutInput').value,
+                    image: imageUrl
+                });
+                showStatus('تم حفظ النبذة');
+            } catch (e) {
+                showStatus('خطأ: ' + e.message, true);
+            }
+        };
+
+        // --- إدارة الروابط الاجتماعية ---
+        window.saveSocial = () => {
+            const id = document.getElementById('socialId').value;
+            const link = document.getElementById('socialLink').value;
+            const icon = document.getElementById('socialIcon').value;
+            if(link) {
+                const socialData = { link, icon };
+                if (id) {
+                    update(ref(db, `socials/${id}`), socialData)
+                        .then(() => { showStatus('تم تعديل الرابط'); resetSocialForm(); })
+                        .catch(e => showStatus('خطأ: ' + e.message, true));
+                } else {
+                    push(ref(db, 'socials'), socialData)
+                        .then(() => { showStatus('تمت إضافة الرابط'); resetSocialForm(); })
+                        .catch(e => showStatus('خطأ: ' + e.message, true));
+                }
+            }
+        };
+
+        window.editSocial = (key, link, icon) => {
+            document.getElementById('socialId').value = key;
+            document.getElementById('socialLink').value = link;
+            document.getElementById('socialIcon').value = icon;
+            document.getElementById('socialIconPreview').className = icon;
+            document.getElementById('btnSaveSocial').textContent = 'تحديث';
+            document.getElementById('btnCancelSocial').style.display = 'inline-block';
+        };
+
+        window.resetSocialForm = () => {
+            document.getElementById('socialId').value = '';
+            document.getElementById('socialLink').value = '';
+            document.getElementById('socialIcon').value = '';
+            document.getElementById('socialIconPreview').className = 'fas fa-question';
+            document.getElementById('btnSaveSocial').textContent = 'إضافة';
+            document.getElementById('btnCancelSocial').style.display = 'none';
+        };
+
+        window.deleteSocial = (key) => {
+            if(confirm('حذف الرابط؟')) remove(ref(db, `socials/${key}`)).catch(e => showStatus('خطأ: ' + e.message, true));
+        };
+
+        // --- إدارة المهارات ---
+        window.saveSkill = () => {
+            const id = document.getElementById('skillId').value;
+            const name = document.getElementById('skillName').value;
+            const icon = document.getElementById('skillIcon').value;
+            if(name) {
+                const skillData = { name, icon };
+                if (id) {
+                    update(ref(db, `skills/${id}`), skillData)
+                        .then(() => { showStatus('تم تعديل المهارة'); resetSkillForm(); })
+                        .catch(e => showStatus('خطأ: ' + e.message, true));
+                } else {
+                    const skillsList = document.getElementById('skillsList');
+                    skillData.sortOrder = skillsList.children.length;
+                    push(ref(db, 'skills'), skillData)
+                        .then(() => { showStatus('تمت إضافة المهارة'); resetSkillForm(); })
+                        .catch(e => showStatus('خطأ: ' + e.message, true));
+                }
+            }
+        };
+
+        window.editSkill = (key, name, icon) => {
+            document.getElementById('skillId').value = key;
+            document.getElementById('skillName').value = name;
+            document.getElementById('skillIcon').value = icon;
+            document.getElementById('iconPreview').className = icon;
+            document.getElementById('btnSaveSkill').textContent = 'تحديث';
+            document.getElementById('btnCancelSkill').style.display = 'inline-block';
+            window.scrollTo(0, document.getElementById('skillName').offsetTop - 100);
+        };
+
+        window.resetSkillForm = () => {
+            document.getElementById('skillId').value = '';
+            document.getElementById('skillName').value = '';
+            document.getElementById('skillIcon').value = '';
+            document.getElementById('iconPreview').className = 'fas fa-question';
+            document.getElementById('btnSaveSkill').textContent = 'إضافة';
+            document.getElementById('btnCancelSkill').style.display = 'none';
+        };
+
+        window.deleteSkill = (key) => {
+            if(confirm('هل أنت متأكد من الحذف؟')) remove(ref(db, `skills/${key}`)).catch(e => showStatus('خطأ: ' + e.message, true));
+        };
+
+        // --- إدارة المشاريع ---
+        let tempProjectImages = [];
+
+        window.uploadProjectImage = async () => {
+            const fileInput = document.getElementById('projFileInput');
+            if (fileInput.files.length > 0) {
+                showStatus('جاري رفع الصورة...');
+                const url = await uploadImage(fileInput.files[0]);
+                if (url) {
+                    tempProjectImages.push(url);
+                    renderTempImages();
+                    fileInput.value = '';
+                    showStatus('تمت إضافة الصورة للقائمة');
+                }
+            }
+        };
+
+        function renderTempImages() {
+            const container = document.getElementById('currentProjectImagesList');
+            container.innerHTML = tempProjectImages.map((url, index) => `
+                <div style="position: relative;">
+                    <img src="${url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                    <span onclick="removeTempImage(${index})" style="position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 15px; height: 15px; text-align: center; line-height: 15px; font-size: 10px; cursor: pointer;">x</span>
+                </div>
+            `).join('');
+        }
+
+        window.removeTempImage = (index) => {
+            tempProjectImages.splice(index, 1);
+            renderTempImages();
+        };
+
+        window.saveProject = async () => {
+            try {
+                const id = document.getElementById('projId').value;
+                const title = document.getElementById('projTitle').value;
+                const category = document.getElementById('projCat').value;
+                const desc = document.getElementById('projDesc').value;
+                const link = document.getElementById('projLink').value;
+                
+                if(title) {
+                    const mainImage = tempProjectImages.length > 0 ? tempProjectImages[0] : '';
+                    const projectData = { 
+                        title, category, desc, link,
+                        image: mainImage,
+                        images: tempProjectImages 
+                    };
+
+                    if (id) {
+                        await update(ref(db, `projects/${id}`), projectData);
+                        showStatus('تم تعديل المشروع');
+                    } else {
+                        const projectsList = document.getElementById('projectsList');
+                        projectData.sortOrder = projectsList.children.length;
+                        await push(ref(db, 'projects'), projectData);
+                        showStatus('تمت إضافة المشروع');
+                    }
+                    resetProjForm();
+                }
+            } catch (e) {
+                showStatus('خطأ: ' + e.message, true);
+            }
+        };
+
+        window.editProject = (key, projDataStr) => {
+            try {
+                const proj = JSON.parse(decodeURIComponent(projDataStr));
+                document.getElementById('projId').value = key;
+                document.getElementById('projTitle').value = proj.title;
+                document.getElementById('projCat').value = proj.category;
+                document.getElementById('projDesc').value = proj.desc;
+                document.getElementById('projLink').value = proj.link || '';
+                tempProjectImages = proj.images || (proj.image ? [proj.image] : []);
+                renderTempImages();
+                document.getElementById('btnSaveProj').textContent = 'تحديث المشروع';
+                document.getElementById('btnCancelProj').style.display = 'inline-block';
+                window.scrollTo(0, document.getElementById('projTitle').offsetTop - 100);
+            } catch (e) {
+                console.error("Error parsing project data", e);
+            }
+        };
+
+        window.resetProjForm = () => {
+            document.getElementById('projId').value = '';
+            document.getElementById('projTitle').value = '';
+            document.getElementById('projCat').value = '';
+            document.getElementById('projDesc').value = '';
+            document.getElementById('projLink').value = '';
+            tempProjectImages = [];
+            renderTempImages();
+            document.getElementById('btnSaveProj').textContent = 'إضافة مشروع جديد';
+            document.getElementById('btnCancelProj').style.display = 'none';
+        };
+
+        window.deleteProject = (key) => {
+            if(confirm('هل أنت متأكد من حذف المشروع؟')) remove(ref(db, `projects/${key}`)).catch(e => showStatus('خطأ: ' + e.message, true));
+        };
+
+        // --- قراءة البيانات ---
+        onValue(ref(db), (snapshot) => {
+            const data = snapshot.val() || {};
+
+            if (data.stats) document.getElementById('visitCount').textContent = data.stats.visits || 0;
+            if (data.theme) {
+                document.getElementById('primaryColor').value = data.theme.primary || '#00ff88';
+                document.getElementById('bgColor').value = data.theme.bg || '#050505';
+            }
+            if (data.profile) {
+                document.getElementById('nameInput').value = data.profile.name || '';
+                document.getElementById('imgInput').value = data.profile.image || '';
+            }
+            if (data.about) {
+                if (typeof data.about === 'object') {
+                    document.getElementById('aboutInput').value = data.about.text || '';
+                    document.getElementById('aboutImgInput').value = data.about.image || '';
+                } else {
+                    document.getElementById('aboutInput').value = data.about || '';
+                }
+            }
+
+            const socialsList = document.getElementById('socialsList');
+            socialsList.innerHTML = '';
+            if(data.socials) {
+                Object.entries(data.socials).forEach(([key, social]) => {
+                    socialsList.innerHTML += `
+                        <div class="item">
+                            <span><i class="${social.icon}"></i> ${social.link}</span>
+                            <div>
+                                <button class="btn-edit" onclick="editSocial('${key}', '${social.link}', '${social.icon}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn-danger" onclick="deleteSocial('${key}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            const skillsList = document.getElementById('skillsList');
+            skillsList.innerHTML = '';
+            if(data.skills) {
+                const sortedSkills = Object.entries(data.skills).sort(([, a], [, b]) => (a.sortOrder || 0) - (b.sortOrder || 0));
+                sortedSkills.forEach(([key, skill]) => {
+                    skillsList.innerHTML += `
+                        <div class="item" draggable="true" data-key="${key}">
+                            <span><i class="${skill.icon}"></i> ${skill.name}</span>
+                            <div>
+                                <button class="btn-edit" onclick="editSkill('${key}', '${skill.name}', '${skill.icon}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn-danger" onclick="deleteSkill('${key}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            const projectsList = document.getElementById('projectsList');
+            projectsList.innerHTML = '';
+            if(data.projects) {
+                const sortedProjects = Object.entries(data.projects).sort(([, a], [, b]) => (a.sortOrder || 0) - (b.sortOrder || 0));
+                sortedProjects.forEach(([key, proj]) => {
+                    // إصلاح مشكلة الاقتباسات في JSON
+                    const projStr = encodeURIComponent(JSON.stringify(proj)).replace(/'/g, "%27");
+                    projectsList.innerHTML += `
+                        <div class="item" draggable="true" data-key="${key}">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <img src="${proj.image}" style="width:40px; height:40px; border-radius:4px; object-fit:cover;">
+                                <div>
+                                    <div style="font-weight:bold;">${proj.title}</div>
+                                    <div style="font-size:0.8em; color:#aaa;">${proj.category}</div>
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn-edit" onclick="editProject('${key}', '${projStr}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn-danger" onclick="deleteProject('${key}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        });
+
+        // --- السحب والإفلات ---
+        function initializeSortableList(listId, firebasePath) {
+            const list = document.getElementById(listId);
+            let draggedItem = null;
+
+            list.addEventListener('dragstart', e => {
+                if (e.target.classList.contains('item')) {
+                    draggedItem = e.target;
+                    setTimeout(() => e.target.classList.add('dragging'), 0);
+                }
+            });
+
+            list.addEventListener('dragend', e => {
+                if (draggedItem) {
+                    draggedItem.classList.remove('dragging');
+                    draggedItem = null;
+                }
+            });
+
+            list.addEventListener('dragover', e => {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(list, e.clientY);
+                if (draggedItem) {
+                    if (afterElement == null) {
+                        list.appendChild(draggedItem);
+                    } else {
+                        list.insertBefore(draggedItem, afterElement);
+                    }
+                }
+            });
+
+            list.addEventListener('drop', () => {
+                const updates = {};
+                const items = list.querySelectorAll('.item');
+                items.forEach((item, index) => {
+                    const key = item.dataset.key;
+                    updates[`${firebasePath}/${key}/sortOrder`] = index;
+                });
+                update(ref(db), updates).then(() => showStatus('تم تحديث الترتيب')).catch(e => showStatus('خطأ: ' + e.message, true));
+            });
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.item:not(.dragging)')];
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        initializeSortableList('skillsList', 'skills');
+        initializeSortableList('projectsList', 'projects');
+    </script>
+</body>
+</html>
